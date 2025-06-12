@@ -2,7 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+.vscode
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 # C extensions
 *.so
 
