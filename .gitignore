@@ -13,6 +13,7 @@ node_modules/
 
 # Distribution / packaging
 .Python
+environment/
 build/
 develop-eggs/
 dist/
