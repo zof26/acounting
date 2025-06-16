@@ -1,22 +1,27 @@
 import os
 import subprocess
-import psycopg2
-from psycopg2 import sql
+import re
+import shutil
 from dotenv import load_dotenv
-import socket
 
 load_dotenv()
 
-DB_URL = os.getenv("DATABASE_URL")
+DB_URL = str(os.getenv("DATABASE_URL")).rstrip("/")
 if not DB_URL:
     raise ValueError("DATABASE_URL not set in .env")
 
-import re
-match = re.match(r"postgresql://(.*?):(.*?)@(.+?):(\d+)/(.*)", DB_URL)
+pattern = re.compile(
+    r"postgresql://(?P<user>.*?):(?P<password>.*?)@(?P<host>.+?):(?P<port>\d+)/(?P<dbname>.+)"
+)
+match = pattern.match(DB_URL)
 if not match:
     raise ValueError("DATABASE_URL format is invalid.")
 
-user, password, host, port, dbname = match.groups()
+user = match["user"]
+password = match["password"]
+host = match["host"]
+port = match["port"]
+dbname = match["dbname"]
 
 
 def is_localhost(hostname: str):
@@ -24,63 +29,74 @@ def is_localhost(hostname: str):
 
 
 def is_postgres_installed():
+    return shutil.which("psql") is not None
+
+
+def try_install_postgres():
+    print("PostgreSQL not found. Attempting to install...")
     try:
-        subprocess.run(["psql", "--version"], check=True, stdout=subprocess.DEVNULL)
-        return True
-    except FileNotFoundError:
-        return False
+        subprocess.run(["sudo", "apt", "update"], check=True)
+        subprocess.run(["sudo", "apt", "install", "-y", "postgresql", "postgresql-contrib"], check=True)
+        print("PostgreSQL installed successfully.")
+    except subprocess.CalledProcessError:
+        print("Failed to install PostgreSQL. Install it manually.")
+        exit(1)
 
 
 def try_start_postgres():
     cmds = [
-        ["systemctl", "start", "postgresql"],
-        ["service", "postgresql", "start"],
+        ["sudo", "systemctl", "start", "postgresql"],
+        ["sudo", "service", "postgresql", "start"],
         ["pg_ctl", "start", "-D", "/usr/local/var/postgres"]
     ]
     for cmd in cmds:
         try:
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             print(f"Started PostgreSQL using: {' '.join(cmd)}")
-            return True
+            return
         except subprocess.CalledProcessError:
             continue
-    print("⚠️  Couldn't automatically start PostgreSQL. It might already be running.")
+    print("Could not start PostgreSQL automatically. It might already be running.")
 
 
-def ensure_database():
+def run_sql_as_postgres(sql_cmd: str):
     try:
-        conn = psycopg2.connect(
-            dbname="postgres",
-            user=user,
-            password=password,
-            host=host,
-            port=port
+        result = subprocess.run(
+            ["sudo", "-u", "postgres", "psql", "-tAc", sql_cmd],
+            capture_output=True, text=True, check=True
         )
-        conn.autocommit = True
-        cur = conn.cursor()
-
-        # Check if DB exists
-        cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (dbname,))
-        if not cur.fetchone():
-            cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(dbname)))
-            print(f"✅ Created database: {dbname}")
-        else:
-            print(f"✅ Database '{dbname}' already exists.")
-
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print(f"❌ Failed to connect to or create DB: {e}")
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"Error running psql command: {sql_cmd}")
+        print(e.stderr)
         exit(1)
+
+
+def ensure_user_and_db():
+    # Check if user exists
+    user_exists = run_sql_as_postgres(f"SELECT 1 FROM pg_roles WHERE rolname='{user}'")
+    if user_exists != "1":
+        run_sql_as_postgres(f"CREATE USER {user} WITH PASSWORD '{password}';")
+        print(f"Created DB user '{user}'")
+    else:
+        print(f"DB user '{user}' already exists")
+
+    # Check if database exists
+    db_exists = run_sql_as_postgres(f"SELECT 1 FROM pg_database WHERE datname='{dbname}'")
+    if db_exists != "1":
+        run_sql_as_postgres(f"CREATE DATABASE {dbname} OWNER {user};")
+        print(f"Created database '{dbname}' owned by '{user}'")
+    else:
+        print(f"Database '{dbname}' already exists")
 
 
 if is_localhost(host):
-    print("🔍 Local database detected.")
+    print("Local PostgreSQL detected.")
     if not is_postgres_installed():
-        print("❌ PostgreSQL is not installed. Please install it manually.")
-        exit(1)
+        try_install_postgres()
     try_start_postgres()
+    ensure_user_and_db()
 else:
-    print(f"🌐 Remote database detected at {host} — skipping local checks.")
+    print(f"Remote database detected at {host} — skipping local setup.")
 
-ensure_database()
+print("Database check complete.")
