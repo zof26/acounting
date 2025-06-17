@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     DATABASE_URL: PostgresDsn
 
     CORS_ORIGINS: List[str] = ["http://localhost:5173"]
+    FRONTEND_URL: str = "http://localhost:5173"
 
     EMAIL_FROM: EmailStr
     EMAIL_FROM_NAME: str = "Acounting"

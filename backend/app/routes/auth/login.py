@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from typing import Annotated
-
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.db.session import get_session
@@ -11,6 +10,8 @@ from app.core.config import settings
 from app.core.security import authenticate_user, create_access_token, get_current_user, credentials_exception
 from app.crud.refresh_token import create_refresh_token
 
+import logging
+logger = logging.getLogger("auth")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -30,9 +31,13 @@ async def login_for_access_token(
     if not user:
         raise credentials_exception
 
-    access_token = create_access_token(data={"sub": user.email})
-    refresh_token = await create_refresh_token(db, user.id)
+    from datetime import datetime, timezone
+    user.last_login = datetime.now(timezone.utc)
+    await db.commit()
 
+    access_token = create_access_token(data={"sub": user.email, "scope": "auth"})
+    refresh_token = await create_refresh_token(db, user.id)
+    
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token.token,

@@ -20,11 +20,7 @@ class User(BaseModel, table=True):
 
     role: RoleEnum = Field(default=RoleEnum.Accountant)  
 
-    is_active: bool = Field(default=True)
-    is_verified: bool = Field(default=False)
-    
+    is_active: bool = Field(default=True)    
 
     last_login: Optional[datetime] = Field(default=None)
     preferences: Optional[dict] = Field(default_factory=dict, sa_column=Column(JSON))
-
-    onboarding_completed: bool = Field(default=False)
