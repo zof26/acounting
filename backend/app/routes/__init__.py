@@ -1,14 +1,13 @@
 import os
 import importlib.util
 import logging
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
 def autoload_routes(app: FastAPI):
-    router = APIRouter()
     base_path = os.path.dirname(__file__)
     base_package = __name__  # 'app.routes'
 
@@ -27,9 +26,7 @@ def autoload_routes(app: FastAPI):
                     continue
                 module = importlib.import_module(full_module_name)
                 if hasattr(module, "router"):
-                    router.include_router(getattr(module, "router"))
+                    app.include_router(getattr(module, "router"), prefix=settings.API_PREFIX)
                     logger.info(f"Loaded router from: {full_module_name}")
             except Exception as e:
                 logger.warning(f"Failed to load router '{full_module_name}': {e}")
-
-    app.include_router(router, prefix=settings.API_PREFIX)
