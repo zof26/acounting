@@ -2,7 +2,6 @@ from typing import List, Literal
 from pydantic import EmailStr, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Acounting API"
     API_PREFIX: str = "/api/v1"
