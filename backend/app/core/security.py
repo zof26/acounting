@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from jwt.exceptions import InvalidTokenError
 from jwt import ExpiredSignatureError
-from typing import Optional, List
+from typing import Optional
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select

@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.db.session import get_session
-from app.core.security import get_current_user, require_roles
+from app.core.security import require_roles
 from app.models.enums import RoleEnum
 from app.models.user import User
 from app.schemas.user import UserRead, UserCreate, UserAdminUpdate

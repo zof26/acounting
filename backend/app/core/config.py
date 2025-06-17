@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Acounting API"
     API_PREFIX: str = "/api/v1"
     VERSION: str = "0.1.0"
-    DEBUG: bool = False
+    DEBUG: bool = True
     ENVIRONMENT: Literal["dev", "prod", "test"] = "dev"
 
     SECRET_KEY: str
@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 14
 
     DATABASE_URL: PostgresDsn
+    SYNC_DATABASE_URL: PostgresDsn
 
     CORS_ORIGINS: List[str] = ["http://localhost:5173"]
     FRONTEND_URL: str = "http://localhost:5173"

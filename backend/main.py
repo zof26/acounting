@@ -15,6 +15,7 @@ from app.schemas.user import UserCreate
 from app.db.session import async_session
 from app.crud.user import get_user_by_email, create_user
 
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,16 +35,14 @@ async def lifespan(app: FastAPI):
                 is_active=True,
             )
             await create_user(db, user_in)
-            logging.getLogger(__name__).info(f"Default admin created: {user_in.email}")
+            logger.info(f"Default admin created: {user_in.email}")
         else:
-            logging.getLogger(__name__).info(f"ℹDefault admin already exists: {existing.email}")
+            logger.info(f"ℹDefault admin already exists: {existing.email}")
     yield
     # === Shutdown ===
     # We don't really need to do any teardown here
 
 def create_app() -> FastAPI:
-    init_logging()
-
     app = FastAPI(
         title=settings.PROJECT_NAME,
         version=settings.VERSION,
@@ -58,6 +57,7 @@ def create_app() -> FastAPI:
             "name": "MIT",
             "url": "https://opensource.org/licenses/MIT",
         },
+        lifespan=lifespan,
     )
 
     app.add_middleware(
