@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import List
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -23,8 +23,8 @@ admin_required = require_roles([RoleEnum.Admin])
 
 @router.get("", response_model=List[UserRead], summary="List all users")
 async def list_users(
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, le=1000),
     db: AsyncSession = Depends(get_session),
     _: User = Depends(admin_required)
 ):
@@ -76,3 +76,4 @@ async def delete_user_by_admin(
     deleted = await delete_user(db, user_id)
     if not deleted:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
+    return None
