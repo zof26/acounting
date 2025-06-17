@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -7,6 +8,38 @@ from app.core.logging import init_logging
 from app.core.exceptions import register_exception_handlers
 from app.routes import autoload_routes
 
+from app.models.enums import RoleEnum
+from app.models.enums import LanguageEnum
+from app.models.enums import CurrencyEnum
+from app.schemas.user import UserCreate
+from app.db.session import async_session
+from app.crud.user import get_user_by_email, create_user
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # === Startup ===
+    init_logging()
+    async with async_session() as db:
+        existing = await get_user_by_email(db, settings.DEFAULT_ADMIN_EMAIL)
+        if not existing:
+            user_in = UserCreate(
+                email=settings.DEFAULT_ADMIN_EMAIL,
+                password=settings.DEFAULT_ADMIN_PASSWORD,
+                first_name=settings.DEFAULT_ADMIN_FIRST_NAME,
+                last_name=settings.DEFAULT_ADMIN_LAST_NAME,
+                preferred_language=LanguageEnum.en,
+                preferred_currency=CurrencyEnum.EUR,
+                role=RoleEnum.Admin,
+                is_active=True,
+            )
+            await create_user(db, user_in)
+            logging.getLogger(__name__).info(f"Default admin created: {user_in.email}")
+        else:
+            logging.getLogger(__name__).info(f"ℹDefault admin already exists: {existing.email}")
+    yield
+    # === Shutdown ===
+    # We don't really need to do any teardown here
 
 def create_app() -> FastAPI:
     init_logging()
@@ -27,7 +60,6 @@ def create_app() -> FastAPI:
         },
     )
 
-    # CORS Middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,

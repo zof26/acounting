@@ -35,6 +35,13 @@ class Settings(BaseSettings):
     ENABLE_ELSTER: bool = False
     ENABLE_BANKING: bool = False
 
+    # Default admin credentials
+    DEFAULT_ADMIN_EMAIL: EmailStr = "admin@example.com"
+    DEFAULT_ADMIN_PASSWORD: str = "gotta_change_this"
+    DEFAULT_ADMIN_FIRST_NAME: str = "Admin"
+    DEFAULT_ADMIN_LAST_NAME: str = "User"
+
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
