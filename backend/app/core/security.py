@@ -6,7 +6,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from jwt.exceptions import InvalidTokenError
-
+from jwt import ExpiredSignatureError
 from typing import Optional, List
 
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -50,6 +50,8 @@ def decode_access_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
+    except ExpiredSignatureError:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Token expired")
     except InvalidTokenError:
         raise credentials_exception
 
@@ -62,8 +64,14 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> Opti
         return None
     return user if user.is_active else None
 
-async def get_current_user(token: Annotated[str,  Depends(oauth2_scheme)], db: Annotated[AsyncSession, Depends(get_session)]) -> User:
+async def get_current_user(
+        token: Annotated[str,  Depends(oauth2_scheme)], 
+        db: Annotated[AsyncSession, Depends(get_session)]
+    ) -> User:
     payload = decode_access_token(token)
+    
+    if payload.get("scope") != "auth":
+        raise credentials_exception
     
     email = payload.get("sub")
     if not email or not isinstance(email, str):

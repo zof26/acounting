@@ -30,7 +30,6 @@ async def refresh_token_endpoint(
             detail="Invalid or expired refresh token",
         )
 
-    # Fetch user
     user_result = await db.exec(select(User).where(User.id == stored_token.user_id))
     user = user_result.one_or_none()
     if not user or not user.is_active:
@@ -42,7 +41,7 @@ async def refresh_token_endpoint(
     # Rotate refresh token
     await revoke_token(db, stored_token)
     new_refresh = await create_refresh_token(db, user.id)
-    new_access_token = create_access_token(data={"sub": user.email})
+    new_access_token = create_access_token(data={"sub": user.email, "scope": "auth"})
 
     return TokenRefreshResponse(
         access_token=new_access_token,
