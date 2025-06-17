@@ -11,7 +11,7 @@ from typing import Optional, List
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-
+from app.models.enums import RoleEnum 
 from app.core.config import settings
 from app.models.user import User
 from app.db.session import get_session
@@ -83,9 +83,12 @@ async def get_current_user(
         raise credentials_exception
     return user
 
-def require_roles(roles: List[str]):
-    async def wrapper(u: User = Depends(get_current_user)):
-        if u.role.value not in roles:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient permissions")
-        return u
+def require_roles(allowed_roles: list[RoleEnum]):
+    async def wrapper(user: User = Depends(get_current_user)):
+        if user.role not in allowed_roles:
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
+        return user
     return wrapper
