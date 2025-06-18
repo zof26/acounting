@@ -12,3 +12,8 @@ class CurrencyEnum(str, Enum):
 class RoleEnum(str, Enum):
     Admin = "Admin"
     Accountant = "Accountant"
+
+class ClientTypeEnum(str, Enum):
+    client = "Client"
+    prospect = "Prospect"
+    lead = "Lead"
