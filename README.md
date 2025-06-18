@@ -8,7 +8,7 @@
 
 ### 1.1 Users & Roles
 - [x] Users
-- [x]Role-based permissions
+- [x] Role-based permissions
 
 ### 1.2 Client & Contact Management
 - Clients with USt-ID validation
