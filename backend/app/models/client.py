@@ -1,26 +1,64 @@
-from typing import Optional
-from sqlmodel import Field, Column, JSON
+from typing import Optional, List, TYPE_CHECKING
+from sqlmodel import Field, Column, Relationship
 from uuid import UUID, uuid4
-from datetime import datetime
-from app.models.base import BaseModel
-from app.models.enums import LanguageEnum, CurrencyEnum, RoleEnum
-import sqlalchemy as sa
+from datetime import datetime, timezone
 
-class Client(BaseModel, table=True):
+import sqlalchemy as sa
+from sqlalchemy import Column, DateTime
+from sqlmodel import SQLModel
+from app.models.enums import ClientTypeEnum
+
+if TYPE_CHECKING:
+    from app.models.contact_person import ContactPerson
+    from app.models.document_attachment import DocumentAttachment
+
+class ClientTag(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    client_id: UUID = Field(foreign_key="client.id", nullable=False, index=True)
+    tag: str = Field(nullable=False, max_length=50)
+
+    client: "Client" = Relationship(back_populates="tags")
+
+
+class Client(SQLModel, table=True):
+    __tablename__ = "client" # type: ignore[assignment]
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
 
-    email: str = Field(index=True, nullable=False, unique=True, max_length=320)
-    hashed_password: str = Field(nullable=False)
+    name: str = Field(nullable=False, max_length=255)
+    type: ClientTypeEnum = Field(default=ClientTypeEnum.client)
 
-    first_name: str = Field(default=None, max_length=50)
-    last_name: str = Field(default=None, max_length=50)
+    ust_id: Optional[str] = Field(default=None, max_length=20)
+    ust_id_validated: bool = Field(default=False)
+    ust_id_checked_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(sa.TIMESTAMP(timezone=True))
+    )
 
-    preferred_language: LanguageEnum = Field(default=LanguageEnum.en)
-    preferred_currency: CurrencyEnum = Field(default=CurrencyEnum.EUR)
+    tags: List["ClientTag"] = Relationship(back_populates="client")
+    notes: Optional[str] = Field(default=None)
 
-    role: RoleEnum = Field(default=RoleEnum.Accountant)  
+    dunning_level: int = Field(default=0, ge=0, le=3)
+    is_active: bool = Field(default=True)
 
-    is_active: bool = Field(default=True)    
+    # Relationships
+    contacts: List["ContactPerson"] = Relationship(
+        back_populates="client",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    attachments: List["DocumentAttachment"] = Relationship(
+        back_populates="client",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
 
-    last_login: Optional[datetime] = Field(default=None, sa_column=Column(sa.TIMESTAMP(timezone=True)))
-    preferences: Optional[dict] = Field(default_factory=dict, sa_column=Column(JSON))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+
+    def touch(self):
+        """Manually update `updated_at` to current UTC time."""
+        self.updated_at = datetime.now(timezone.utc)
