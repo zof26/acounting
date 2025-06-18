@@ -12,14 +12,6 @@ if TYPE_CHECKING:
     from app.models.contact_person import ContactPerson
     from app.models.document_attachment import DocumentAttachment
 
-class ClientTag(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    client_id: UUID = Field(foreign_key="client.id", nullable=False, index=True)
-    tag: str = Field(nullable=False, max_length=50)
-
-    client: "Client" = Relationship(back_populates="tags")
-
-
 class Client(SQLModel, table=True):
     __tablename__ = "client" # type: ignore[assignment]
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
@@ -34,9 +26,7 @@ class Client(SQLModel, table=True):
         sa_column=Column(sa.TIMESTAMP(timezone=True))
     )
 
-    tags: List["ClientTag"] = Relationship(back_populates="client")
     notes: Optional[str] = Field(default=None)
-
     dunning_level: int = Field(default=0, ge=0, le=3)
     is_active: bool = Field(default=True)
 
