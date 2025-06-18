@@ -15,7 +15,7 @@
 - Prospects & leads
 - Contact persons
 - Tags & notes
-- History & document attachments
+- Document attachments
 - Mahnwesen/dunning levels
 
 ### 1.3 Services & Products
