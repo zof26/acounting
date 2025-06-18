@@ -7,8 +7,8 @@
 ## 1. Core
 
 ### 1.1 Users & Roles
-- Users
-- Role-based permissions
+- [x] Users
+- [x]Role-based permissions
 
 ### 1.2 Client & Contact Management
 - Clients with USt-ID validation
