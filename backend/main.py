@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
             await create_user(db, user_in)
             logger.info(f"Default admin created: {user_in.email}")
         else:
-            logger.info(f"ℹDefault admin already exists: {existing.email}")
+            logger.debug(f"Default admin already exists: {existing.email}")
     yield
     # === Shutdown ===
     # We don't really need to do any teardown here
@@ -74,7 +74,7 @@ def create_app() -> FastAPI:
         logger = logging.getLogger("uvicorn.access")
         ua = request.headers.get("user-agent", "-")
         ip = request.client.host if request.client else "unknown"
-        logger.info(f"Incoming request: {request.method} {request.url.path} from {ip} - UA: {ua}")
+        logger.debug(f"Incoming request: {request.method} {request.url.path} from {ip} - UA: {ua}")
         return await call_next(request)
 
     # Register all routers dynamically
