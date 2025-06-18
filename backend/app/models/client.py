@@ -16,7 +16,7 @@ class Client(SQLModel, table=True):
     __tablename__ = "client" # type: ignore[assignment]
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
 
-    name: str = Field(nullable=False, max_length=255)
+    name: str = Field(nullable=False, max_length=512)
     type: ClientTypeEnum = Field(default=ClientTypeEnum.client)
 
     ust_id: Optional[str] = Field(default=None, max_length=20)

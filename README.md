@@ -14,7 +14,7 @@
 - Clients with USt-ID validation
 - Prospects & leads
 - Contact persons
-- Tags & notes
+- Notes
 - Document attachments
 - Mahnwesen/dunning levels
 
