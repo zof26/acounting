@@ -2,7 +2,7 @@ from typing import Optional, List
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-
+from sqlalchemy.orm import selectinload
 from app.models.client import Client
 from app.models.contact_person import ContactPerson
 from app.models.document_attachment import DocumentAttachment
@@ -37,7 +37,14 @@ async def create_client(db: AsyncSession, client_in: ClientCreate) -> Client:
 
 
 async def get_client_by_id(db: AsyncSession, client_id: UUID) -> Optional[Client]:
-    result = await db.exec(select(Client).where(Client.id == client_id))
+    result = await db.exec(
+        select(Client)
+        .where(Client.id == client_id)
+        .options(
+            selectinload(Client.contacts),      # type: ignore[arg-type]
+            selectinload(Client.attachments)    # type: ignore[arg-type]
+        )
+    )
     return result.one_or_none()
 
 async def get_clients(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Client]:

@@ -5,7 +5,8 @@ from pydantic import BaseModel, Field, ConfigDict
 from app.models.enums import ClientTypeEnum
 from app.schemas.contact_person import ContactPersonCreate
 from app.schemas.document_attachment import DocumentAttachmentCreate
-
+from app.schemas.contact_person import ContactPersonRead
+from app.schemas.document_attachment import DocumentAttachmentRead
 
 class ClientBase(BaseModel):
     name: str = Field(..., max_length=512)
@@ -39,5 +40,8 @@ class ClientRead(ClientBase):
     id: UUID
     created_at: datetime
     updated_at: datetime
+    contacts: List[ContactPersonRead] = Field(default_factory=list)
+    attachments: List[DocumentAttachmentRead] = Field(default_factory=list)
+
 
     model_config = ConfigDict(from_attributes=True)
