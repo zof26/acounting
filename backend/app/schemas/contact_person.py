@@ -11,12 +11,12 @@ class ContactPersonBase(BaseModel):
     mobile: Optional[str] = Field(None, max_length=50)
     position: Optional[str] = Field(None, max_length=100)
     notes: Optional[str] = None
-    is_main_contact: bool = False
+    is_main_contact: bool = True
 
     model_config = ConfigDict(from_attributes=True)
 
 class ContactPersonCreate(ContactPersonBase):
-    client_id: UUID
+    pass
 
 class ContactPersonUpdate(BaseModel):
     first_name: Optional[str] = Field(None, max_length=50)

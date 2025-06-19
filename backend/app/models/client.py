@@ -2,7 +2,7 @@ from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import Field, Column, Relationship
 from uuid import UUID, uuid4
 from datetime import datetime, timezone
-
+from typing import Annotated
 import sqlalchemy as sa
 from sqlalchemy import Column, DateTime
 from sqlmodel import SQLModel
@@ -20,14 +20,14 @@ class Client(SQLModel, table=True):
     type: ClientTypeEnum = Field(default=ClientTypeEnum.client)
 
     ust_id: Optional[str] = Field(default=None, max_length=20)
-    ust_id_validated: bool = Field(default=False)
+    ust_id_validated: Optional[bool] = Field(default=False)
     ust_id_checked_at: Optional[datetime] = Field(
         default=None,
         sa_column=Column(sa.TIMESTAMP(timezone=True))
     )
 
     notes: Optional[str] = Field(default=None)
-    dunning_level: int = Field(default=0, ge=0, le=3)
+    dunning_level: Optional[int] = Field(default=0, ge=0, le=3)
     is_active: bool = Field(default=True)
 
     # Relationships

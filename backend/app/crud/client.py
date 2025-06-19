@@ -33,6 +33,9 @@ async def create_client(db: AsyncSession, client_in: ClientCreate) -> Client:
 
     await db.commit()
     await db.refresh(client)
+    client = await get_client_by_id(db, client.id)
+    if client is None:
+        raise Exception("Unexpected: client not found after creation")
     return client
 
 
@@ -48,7 +51,15 @@ async def get_client_by_id(db: AsyncSession, client_id: UUID) -> Optional[Client
     return result.one_or_none()
 
 async def get_clients(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Client]:
-    result = await db.exec(select(Client).offset(skip).limit(limit))
+    result = await db.exec(
+        select(Client)
+        .options(
+            selectinload(Client.contacts),      # type: ignore[arg-type]
+            selectinload(Client.attachments),   # type: ignore[arg-type]
+        )
+        .offset(skip)
+        .limit(limit)
+    )
     return list(result)
 
 async def update_client(db: AsyncSession, db_client: Client, client_in: ClientUpdate) -> Client:

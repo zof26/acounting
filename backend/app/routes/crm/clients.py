@@ -149,7 +149,7 @@ async def add_attachment(
     _: User = Depends(crm_required),
 ):
     attachment = DocumentAttachmentCreate(**attachment_in.model_dump())
-    attachment.client_id = client_id
+    attachment = attachment_in.model_copy(update={"client_id": client_id})
     return await create_attachment(db, attachment)
 
 

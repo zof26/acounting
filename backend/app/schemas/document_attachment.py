@@ -13,7 +13,7 @@ class DocumentAttachmentBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class DocumentAttachmentCreate(DocumentAttachmentBase):
-    client_id: UUID
+    pass
 
 class DocumentAttachmentRead(DocumentAttachmentBase):
     id: UUID

@@ -22,7 +22,7 @@ class ContactPerson(SQLModel, table=True):
     position: Optional[str] = Field(default=None, max_length=100)
     notes: Optional[str] = Field(default=None)
 
-    is_main_contact: bool = Field(default=False)
+    is_main_contact: bool = Field(default=True)
 
     client: Optional["Client"] = Relationship(back_populates="contacts")
 
