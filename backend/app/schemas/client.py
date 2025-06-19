@@ -3,6 +3,9 @@ from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 from app.models.enums import ClientTypeEnum
+from app.schemas.contact_person import ContactPersonCreate
+from app.schemas.document_attachment import DocumentAttachmentCreate
+
 
 class ClientBase(BaseModel):
     name: str = Field(..., max_length=512)
@@ -17,7 +20,8 @@ class ClientBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class ClientCreate(ClientBase):
-    pass
+    contacts: List[ContactPersonCreate] = Field(default_factory=list)
+    attachments: List[DocumentAttachmentCreate] = Field(default_factory=list)
 
 class ClientUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=512)
