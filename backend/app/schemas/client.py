@@ -21,8 +21,8 @@ class ClientBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class ClientCreate(ClientBase):
-    contacts: List[ContactPersonCreate] = Field(default_factory=list)
-    attachments: List[DocumentAttachmentCreate] = Field(default_factory=list)
+    contacts: Optional[List[ContactPersonCreate]] = Field(default_factory=list)
+    attachments: Optional[List[DocumentAttachmentCreate]] = Field(default_factory=list)
 
 class ClientUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=512)
