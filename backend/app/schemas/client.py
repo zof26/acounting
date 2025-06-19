@@ -33,6 +33,9 @@ class ClientUpdate(BaseModel):
     notes: Optional[str] = None
     dunning_level: Optional[int] = Field(None, ge=0, le=3)
     is_active: Optional[bool] = None
+    contacts: Optional[List[ContactPersonCreate]] = Field(default_factory=list)
+    attachments: Optional[List[DocumentAttachmentCreate]] = Field(default_factory=list)
+
 
     model_config = ConfigDict(from_attributes=True)
 
