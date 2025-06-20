@@ -11,7 +11,7 @@ from app.routes import autoload_routes
 from app.models.enums import RoleEnum
 from app.models.enums import LanguageEnum
 from app.models.enums import CurrencyEnum
-from app.schemas.user import UserCreate
+from app.models.user import UserCreate
 from app.db.session import async_session
 from app.crud.user import get_user_by_email, create_user
 

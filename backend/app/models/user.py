@@ -1,12 +1,15 @@
 from typing import Optional
-from sqlmodel import Field, Column, JSON
+from sqlmodel import Field, Column, JSON, SQLModel
 from uuid import UUID, uuid4
 from datetime import datetime, timezone
-from sqlmodel import SQLModel
 from app.models.enums import LanguageEnum, CurrencyEnum, RoleEnum
 import sqlalchemy as sa
 from sqlalchemy import Column, DateTime
+from pydantic import BaseModel, EmailStr, ConfigDict
+from app.models.enums import LanguageEnum, CurrencyEnum, RoleEnum
 
+
+# ==== ORM model =====
 class User(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
 
@@ -20,7 +23,6 @@ class User(SQLModel, table=True):
     preferred_currency: CurrencyEnum = Field(default=CurrencyEnum.EUR)
 
     role: RoleEnum = Field(default=RoleEnum.Accountant)  
-
     is_active: bool = Field(default=True)    
 
     last_login: Optional[datetime] = Field(default=None, sa_column=Column(sa.TIMESTAMP(timezone=True)))
@@ -38,3 +40,48 @@ class User(SQLModel, table=True):
     def touch(self):
         """Manually update `updated_at` to current UTC time."""
         self.updated_at = datetime.now(timezone.utc)
+
+# ==== Pydantic schemas =====
+
+class UserBase(BaseModel):
+    email: EmailStr
+    first_name: str = Field(min_length=1, max_length=50)
+    last_name: str = Field(min_length=1, max_length=50)
+    preferred_language: LanguageEnum = LanguageEnum.en
+    preferred_currency: CurrencyEnum = CurrencyEnum.EUR
+    role: RoleEnum = RoleEnum.Accountant
+    
+    model_config = ConfigDict(from_attributes=True)
+
+class UserCreate(UserBase):
+    password: str = Field(..., min_length=8)
+    is_active: bool = True
+
+class UserUpdate(BaseModel):
+    first_name: Optional[str] = Field(None, min_length=1, max_length=50)
+    last_name: Optional[str] = Field(None, min_length=1, max_length=50)
+    preferred_language: Optional[LanguageEnum] = None
+    preferred_currency: Optional[CurrencyEnum] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class UserAdminUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = Field(None, min_length=1, max_length=50)
+    last_name: Optional[str] = Field(None, min_length=1, max_length=50)
+    preferred_language: Optional[LanguageEnum] = None
+    preferred_currency: Optional[CurrencyEnum] = None
+    role: Optional[RoleEnum] = None
+    is_active: Optional[bool] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class UserRead(UserBase):
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
+    last_login: Optional[datetime] = None
+    preferences: Optional[dict] = Field(default_factory=dict)
+    is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)

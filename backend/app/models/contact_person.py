@@ -4,7 +4,10 @@ from uuid import UUID, uuid4
 from sqlmodel import SQLModel
 from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime
+from pydantic import BaseModel, EmailStr, ConfigDict
 
+
+# ==== ORM model ====
 
 if TYPE_CHECKING:
     from app.models.client import Client
@@ -38,3 +41,40 @@ class ContactPerson(SQLModel, table=True):
     def touch(self):
         """Manually update `updated_at` to current UTC time."""
         self.updated_at = datetime.now(timezone.utc)
+
+# ==== Pydantic schemas ====
+
+class ContactPersonBase(BaseModel):
+    first_name: str = Field(..., max_length=50)
+    last_name: str = Field(..., max_length=50)
+    email: Optional[EmailStr] = Field(None, max_length=320)
+    phone: Optional[str] = Field(None, max_length=50)
+    mobile: Optional[str] = Field(None, max_length=50)
+    position: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = None
+    is_main_contact: bool = True
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ContactPersonCreate(ContactPersonBase):
+    client_id: Optional[UUID] = None
+
+class ContactPersonUpdate(BaseModel):
+    first_name: Optional[str] = Field(None, max_length=50)
+    last_name: Optional[str] = Field(None, max_length=50)
+    email: Optional[EmailStr] = Field(None, max_length=320)
+    phone: Optional[str] = Field(None, max_length=50)
+    mobile: Optional[str] = Field(None, max_length=50)
+    position: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = None
+    is_main_contact: Optional[bool] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ContactPersonRead(ContactPersonBase):
+    id: UUID
+    client_id: UUID
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

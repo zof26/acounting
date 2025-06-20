@@ -22,13 +22,17 @@ async def create_client(db: AsyncSession, client_in: ClientCreate) -> Client:
     contacts: List[ContactPersonCreate] = getattr(client_in, "contacts", [])
 
     for contact in contacts:
-        contact_model = ContactPerson(**contact.model_dump(), client_id=client.id)
+        contact_model = ContactPerson(
+            **contact.model_copy(update={"client_id": client.id}).model_dump()
+            )
         db.add(contact_model)
 
     # Nested document attachments
     attachments: List[DocumentAttachmentCreate] = getattr(client_in, "attachments", [])
     for attachment in attachments:
-        attachment_model = DocumentAttachment(**attachment.model_dump(), client_id=client.id)
+        attachment_model = DocumentAttachment(
+            **attachment.model_copy(update={"client_id": client.id}).model_dump()
+            )
         db.add(attachment_model)
 
     await db.commit()
