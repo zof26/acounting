@@ -101,3 +101,12 @@ class ClientRead(ClientBase):
 
 
     model_config = ConfigDict(from_attributes=True)
+
+class VATValidationResponse(BaseModel):
+    valid: bool
+    name: Optional[str]
+    address: Optional[str]
+    checked_at: datetime
+    note: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)

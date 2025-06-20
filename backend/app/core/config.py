@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     ENABLE_ELSTER: bool = False
     ENABLE_BANKING: bool = False
 
+    # APIs
+    VIES_WSDL_URL: str = "https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl"
+
     # Default admin credentials
     DEFAULT_ADMIN_EMAIL: EmailStr = "admin@example.com"
     DEFAULT_ADMIN_PASSWORD: str = "gotta_change_this"

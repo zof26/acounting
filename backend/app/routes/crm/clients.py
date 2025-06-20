@@ -2,15 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import List
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
-
+from datetime import datetime, timezone
 from app.db.session import get_session
 from app.core.security import require_roles
 from app.models.enums import RoleEnum
 from app.models.user import User
 
-from app.models.client import ClientCreate, ClientUpdate, ClientRead
+from app.models.client import ClientCreate, ClientUpdate, ClientRead, VATValidationResponse
 from app.models.contact_person import ContactPersonCreate, ContactPersonUpdate, ContactPersonRead
 from app.models.document_attachment import DocumentAttachmentCreate, DocumentAttachmentRead
+from app.services.vat_validation import validate_vat_id
 
 from app.crud.client import (
     get_clients,
@@ -82,6 +83,53 @@ async def patch_client(
     if not client:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Client not found")
     return await update_client(db, client, client_in)
+
+@router.post("/{client_id}/validate-vat", response_model=VATValidationResponse, summary="Validate client's VAT ID")
+async def validate_client_vat(
+    client_id: UUID,
+    db: AsyncSession = Depends(get_session),
+    _: User = Depends(crm_required),
+):
+    client = await get_client_by_id(db, client_id)
+    if not client:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Client not found")
+
+    if not client.ust_id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Client has no USt-IdNr")
+
+    # Skip if already validated today
+    now = datetime.now(timezone.utc)
+    if client.ust_id_checked_at and client.ust_id_checked_at.date() == now.date():
+        return {
+            "valid": client.ust_id_validated,
+            "name": None,
+            "address": None,
+            "checked_at": client.ust_id_checked_at.isoformat(),
+            "note": "Already validated today"
+        }
+
+    # Call VIES service
+    result = await validate_vat_id(client.ust_id)
+
+    if not result.valid and not result.name and not result.address:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="VIES service is temporarily unavailable. Try again later.",
+        )
+
+    # Update client
+    client.ust_id_validated = result.valid
+    client.ust_id_checked_at = result.checked_at
+    await db.commit()
+    await db.refresh(client)
+
+    return {
+        "valid": result.valid,
+        "name": result.name,
+        "address": result.address,
+        "checked_at": result.checked_at.isoformat(),
+    }
+
 
 # --- Contact Persons ---
 
