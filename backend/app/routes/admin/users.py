@@ -7,7 +7,7 @@ from app.db.session import get_session
 from app.core.security import require_roles
 from app.models.enums import RoleEnum
 from app.models.user import User
-from app.schemas.user import UserRead, UserCreate, UserAdminUpdate
+from app.models.user import UserRead, UserCreate, UserAdminUpdate
 from app.crud.user import (
     create_user,
     get_user_by_id,

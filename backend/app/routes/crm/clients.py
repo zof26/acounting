@@ -8,9 +8,9 @@ from app.core.security import require_roles
 from app.models.enums import RoleEnum
 from app.models.user import User
 
-from app.schemas.client import ClientCreate, ClientUpdate, ClientRead
-from app.schemas.contact_person import ContactPersonCreate, ContactPersonUpdate, ContactPersonRead
-from app.schemas.document_attachment import DocumentAttachmentCreate, DocumentAttachmentRead
+from app.models.client import ClientCreate, ClientUpdate, ClientRead
+from app.models.contact_person import ContactPersonCreate, ContactPersonUpdate, ContactPersonRead
+from app.models.document_attachment import DocumentAttachmentCreate, DocumentAttachmentRead
 
 from app.crud.client import (
     get_clients,

@@ -6,7 +6,7 @@ from datetime import timedelta
 from sqlmodel import select
 from app.db.session import get_session
 from app.models.user import User
-from app.schemas.password import (
+from app.models.password import (
     PasswordChange,
     PasswordResetRequest,
     PasswordResetConfirm,

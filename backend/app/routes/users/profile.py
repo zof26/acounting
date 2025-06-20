@@ -5,8 +5,8 @@ from typing import Annotated
 from app.core.security import get_current_user, verify_password, hash_password
 from app.db.session import get_session
 from app.models.user import User
-from app.schemas.user import UserRead, UserUpdate
-from app.schemas.password import PasswordChange
+from app.models.user import UserRead, UserUpdate
+from app.models.password import PasswordChange
 from app.crud.user import update_user_password, update_user_self
 
 router = APIRouter(prefix="/users/me", tags=["users"])

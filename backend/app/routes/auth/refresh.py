@@ -5,7 +5,7 @@ from sqlmodel import select
 from app.db.session import get_session
 from app.models.user import User
 from app.models.refresh_token import RefreshToken
-from app.schemas.refresh_token import RefreshRequest, TokenRefreshResponse
+from app.models.refresh_token import RefreshRequest, TokenRefreshResponse
 from app.crud.refresh_token import (
     get_refresh_token,
     revoke_token,

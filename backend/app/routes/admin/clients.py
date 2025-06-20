@@ -7,7 +7,7 @@ from app.db.session import get_session
 from app.core.security import require_roles
 from app.models.enums import RoleEnum
 from app.models.user import User
-from app.schemas.client import ClientRead, ClientCreate, ClientUpdate
+from app.models.client import ClientRead, ClientCreate, ClientUpdate
 from app.crud.client import (
     get_clients,
     get_client_by_id,

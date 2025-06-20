@@ -4,7 +4,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models.document_attachment import DocumentAttachment
-from app.schemas.document_attachment import DocumentAttachmentCreate
+from app.models.document_attachment import DocumentAttachmentCreate
 
 async def create_attachment(db: AsyncSession, attachment_in: DocumentAttachmentCreate) -> DocumentAttachment:
     attachment = DocumentAttachment(**attachment_in.model_dump())

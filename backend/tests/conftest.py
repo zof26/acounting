@@ -5,6 +5,10 @@ import pytest
 from httpx import AsyncClient, ASGITransport
 from main import app
 from app.core.config import settings
+from app.routes.crm import clients
+
+from app.routes import autoload_routes
+autoload_routes(app)
 
 @pytest.fixture(scope="session", autouse=True)
 def anyio_backend():
