@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
+from sqlalchemy import Column, DateTime
 
 
 class ItemType(str, Enum):
@@ -34,11 +35,11 @@ class Item(SQLModel, table=True):
 
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        nullable=False
+        sa_column=Column(DateTime(timezone=True), nullable=False),
     )
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        nullable=False
+        sa_column=Column(DateTime(timezone=True), nullable=False),
     )
 
     def touch(self):
