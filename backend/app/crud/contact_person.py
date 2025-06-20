@@ -4,7 +4,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models.contact_person import ContactPerson
-from app.schemas.contact_person import ContactPersonCreate, ContactPersonUpdate
+from app.models.contact_person import ContactPersonCreate, ContactPersonUpdate
 
 async def create_contact_person(db: AsyncSession, contact_in: ContactPersonCreate) -> ContactPerson:
     contact = ContactPerson(**contact_in.model_dump())

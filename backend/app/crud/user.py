@@ -4,7 +4,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 
 from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate, UserAdminUpdate
+from app.models.user import UserCreate, UserUpdate, UserAdminUpdate
 from app.core.security import hash_password
 
 

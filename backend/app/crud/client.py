@@ -7,9 +7,9 @@ from app.models.client import Client
 from app.models.contact_person import ContactPerson
 from app.models.document_attachment import DocumentAttachment
 
-from app.schemas.client import ClientCreate, ClientUpdate
-from app.schemas.contact_person import ContactPersonCreate
-from app.schemas.document_attachment import DocumentAttachmentCreate
+from app.models.client import ClientCreate, ClientUpdate
+from app.models.contact_person import ContactPersonCreate
+from app.models.document_attachment import DocumentAttachmentCreate
 
 async def create_client(db: AsyncSession, client_in: ClientCreate) -> Client:
     client_data = client_in.model_dump(exclude={"contacts", "attachments"})
