@@ -2,7 +2,7 @@ from typing import Optional, List
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-
+from collections.abc import Sequence
 from app.models.item import Item, ItemCreate, ItemUpdate
 
 
@@ -11,10 +11,6 @@ async def create_item(db: AsyncSession, item_in: ItemCreate) -> Item:
     db.add(item)
     await db.commit()
     await db.refresh(item)
-
-    item = await get_item_by_id(db, item.id)
-    if item is None:
-        raise Exception("Unexpected: item not found after creation")
     return item
 
 
@@ -25,13 +21,11 @@ async def get_item_by_id(db: AsyncSession, item_id: UUID) -> Optional[Item]:
     return result.one_or_none()
 
 
-async def get_items(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Item]:
+async def get_items(db: AsyncSession, skip: int = 0, limit: int = 100) -> Sequence[Item]:
     result = await db.exec(
-        select(Item)
-        .offset(skip)
-        .limit(limit)
+        select(Item).offset(skip).limit(limit)
     )
-    return list(result)
+    return result.all()
 
 
 async def update_item(db: AsyncSession, db_item: Item, item_in: ItemUpdate) -> Item:
