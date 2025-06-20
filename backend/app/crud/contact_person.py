@@ -27,6 +27,7 @@ async def update_contact_person(
     data = contact_in.model_dump(exclude_unset=True)
     for field, value in data.items():
         setattr(db_contact, field, value)
+    db_contact.touch()  # Update the updated_at timestamp
     await db.commit()
     await db.refresh(db_contact)
     return db_contact

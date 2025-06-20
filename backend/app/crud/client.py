@@ -70,6 +70,7 @@ async def update_client(db: AsyncSession, db_client: Client, client_in: ClientUp
     data = client_in.model_dump(exclude_unset=True)
     for field, value in data.items():
         setattr(db_client, field, value)
+    db_client.touch()  # Update the updated_at timestamp
     await db.commit()
     await db.refresh(db_client)
     return db_client

@@ -48,6 +48,8 @@ async def update_user_admin(db: AsyncSession, db_user: User, user_in: UserAdminU
     data = user_in.model_dump(exclude_unset=True)
     for field, value in data.items():
         setattr(db_user, field, value)
+    
+    db_user.touch()  # Update the updated_at timestamp
     await db.commit()
     await db.refresh(db_user)
     return db_user
