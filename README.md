@@ -19,10 +19,9 @@
 - [x] Mahnwesen/dunning levels
 
 ### 1.3 Services & Products
-- Time/unit-based items
-- Default VAT per item
-- Item bundles/templates
-- Internal cost/profit tracking
+- [x] Time/unit-based items
+- [x] Default VAT per item
+- [ ] Internal cost/profit tracking
 
 ### 1.4 Dashboard
 - Financial summary (monthly/yearly/quarterly)
