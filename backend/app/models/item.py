@@ -24,8 +24,8 @@ class Item(SQLModel, table=True):
     type: ItemType = Field(default=ItemType.service)
 
     unit: Optional[str] = Field(default="hour", max_length=50)  # e.g., "hour", "piece", "day"
-    unit_price: Decimal = Field(default=Decimal("0.0"), ge=0)
-    cost_price: Optional[Decimal] = Field(default=Decimal("0.0"), ge=0)
+    unit_price: Decimal = Field(default=Decimal("0.0"), ge=0, decimal_places=2)
+    cost_price: Optional[Decimal] = Field(default=Decimal("0.0"), ge=0, decimal_places=2)
     vat_rate: Decimal = Field(default=Decimal("19.0"), ge=0, le=100)
 
     external_id: Optional[str] = Field(default=None, max_length=100)  # for SKU, shop sync, etc.
