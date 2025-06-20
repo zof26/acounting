@@ -11,12 +11,12 @@
 - [x] Role-based permissions
 
 ### 1.2 Client & Contact Management
-- Clients with USt-ID validation
-- Prospects & leads
-- Contact persons
-- Notes
-- Document attachments
-- Mahnwesen/dunning levels
+- [x] Clients, Prospects & leads
+- [x] USt-ID validation
+- [x] Contact persons
+- [x] Notes
+- [x] Document attachments
+- [x] Mahnwesen/dunning levels
 
 ### 1.3 Services & Products
 - Time/unit-based items
