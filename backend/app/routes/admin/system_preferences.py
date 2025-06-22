@@ -17,7 +17,7 @@ from app.crud.system_preferences import (
     update_preferences,
 )
 
-router = APIRouter(prefix="/admin/system-preferences", tags=["admin"])
+router = APIRouter(prefix="/admin/preferences", tags=["admin"])
 
 admin_required = require_roles([RoleEnum.Admin])
 

@@ -2,7 +2,6 @@ from typing import Optional, List
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-
 from app.models.user import User
 from app.models.user import UserCreate, UserUpdate, UserAdminUpdate
 from app.core.security import hash_password
@@ -14,8 +13,6 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
         hashed_password=hash_password(user_in.password),
         first_name=user_in.first_name,
         last_name=user_in.last_name,
-        preferred_language=user_in.preferred_language,
-        preferred_currency=user_in.preferred_currency,
         role=user_in.role,
         is_active=user_in.is_active,
     )
