@@ -48,27 +48,27 @@
 - Auto-PDF archive (GoBD-compliant)
 - Cancellation texts & terms
 
-### 2.2 Quotes & Offers
+### 2.2 E-Invoicing
+- ZUGFeRD (1.0/2.1), XRechnung
+- Peppol-compatible
+- PDF with embedded XML
+- Email + network sending
+
+### 2.3 Quotes & Offers
 - Convert to invoice
 - Optional line items
 - Validity period
 - Digital client approval
 
-### 2.3 Credit Notes
+### 2.4 Credit Notes
 - Partial or full
 - Linked to invoice
 - Track refund status
 
-### 2.4 Delivery Notes / Purchase Orders
+### 2.5 Delivery Notes / Purchase Orders
 - Optional
 - Signable PDFs
 - Reference numbers
-
-### 2.5 E-Invoicing
-- ZUGFeRD (1.0/2.1), XRechnung
-- Peppol-compatible
-- PDF with embedded XML
-- Email + network sending
 
 ### 2.6 Dunning & Reminders
 - Configurable auto-reminders
