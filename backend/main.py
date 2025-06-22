@@ -2,25 +2,38 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
-
+from pathlib import Path
 from app.core.config import settings
 from app.core.logging import init_logging
 from app.core.exceptions import register_exception_handlers
 from app.routes import autoload_routes
 
 from app.models.enums import RoleEnum
-from app.models.enums import LanguageEnum
-from app.models.enums import CurrencyEnum
 from app.models.user import UserCreate
 from app.db.session import async_session
 from app.crud.user import get_user_by_email, create_user
 
 logger = logging.getLogger(__name__)
 
+def init_storage_structure():
+    base = Path(settings.FILE_STORAGE_PATH)
+    subdirs = [
+        "invoices",
+        "quotes",
+        "credit_notes",
+        "delivery_notes",
+        "dunning",
+        "templates",
+        "attachments",
+    ]
+    for sub in subdirs:
+        (base / sub).mkdir(parents=True, exist_ok=True)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # === Startup ===
     init_logging()
+    init_storage_structure()
     async with async_session() as db:
         existing = await get_user_by_email(db, settings.DEFAULT_ADMIN_EMAIL)
         if not existing:
@@ -29,8 +42,6 @@ async def lifespan(app: FastAPI):
                 password=settings.DEFAULT_ADMIN_PASSWORD,
                 first_name=settings.DEFAULT_ADMIN_FIRST_NAME,
                 last_name=settings.DEFAULT_ADMIN_LAST_NAME,
-                preferred_language=LanguageEnum.en,
-                preferred_currency=CurrencyEnum.EUR,
                 role=RoleEnum.Admin,
                 is_active=True,
             )
