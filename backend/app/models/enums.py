@@ -18,8 +18,6 @@ class ClientTypeEnum(str, Enum):
     prospect = "Prospect"
     lead = "Lead"
 
-from enum import Enum
-
 class TaxSchemeEnum(str, Enum):
     kleinunternehmer = "Kleinunternehmer"
     vat_liable = "VAT liable"

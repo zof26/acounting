@@ -2,11 +2,10 @@ from typing import Optional
 from sqlmodel import Field, Column, JSON, SQLModel
 from uuid import UUID, uuid4
 from datetime import datetime, timezone
-from app.models.enums import LanguageEnum, CurrencyEnum, RoleEnum
+from app.models.enums import RoleEnum
 import sqlalchemy as sa
 from sqlalchemy import Column, DateTime
 from pydantic import BaseModel, EmailStr, ConfigDict
-from app.models.enums import LanguageEnum, CurrencyEnum, RoleEnum
 
 
 # ==== ORM model =====
@@ -18,9 +17,6 @@ class User(SQLModel, table=True):
 
     first_name: str = Field(default=None, max_length=50)
     last_name: str = Field(default=None, max_length=50)
-
-    preferred_language: LanguageEnum = Field(default=LanguageEnum.en)
-    preferred_currency: CurrencyEnum = Field(default=CurrencyEnum.EUR)
 
     role: RoleEnum = Field(default=RoleEnum.Accountant)  
     is_active: bool = Field(default=True)    
@@ -47,8 +43,6 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: str = Field(min_length=1, max_length=50)
     last_name: str = Field(min_length=1, max_length=50)
-    preferred_language: LanguageEnum = LanguageEnum.en
-    preferred_currency: CurrencyEnum = CurrencyEnum.EUR
     role: RoleEnum = RoleEnum.Accountant
     
     model_config = ConfigDict(from_attributes=True)
@@ -60,8 +54,6 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, min_length=1, max_length=50)
     last_name: Optional[str] = Field(None, min_length=1, max_length=50)
-    preferred_language: Optional[LanguageEnum] = None
-    preferred_currency: Optional[CurrencyEnum] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -69,8 +61,6 @@ class UserAdminUpdate(BaseModel):
     email: Optional[EmailStr] = None
     first_name: Optional[str] = Field(None, min_length=1, max_length=50)
     last_name: Optional[str] = Field(None, min_length=1, max_length=50)
-    preferred_language: Optional[LanguageEnum] = None
-    preferred_currency: Optional[CurrencyEnum] = None
     role: Optional[RoleEnum] = None
     is_active: Optional[bool] = None
 

@@ -15,7 +15,7 @@ class SystemPreferences(SQLModel, table=True):
     id: UUID = Field(default=STATIC_ID, primary_key=True, index=True)
 
     company_name: str = Field(max_length=512)
-    company_logo_url: Optional[HttpUrl] = Field(default=None, nullable=True)
+    company_logo_url: Optional[str] = Field(default=None, nullable=True, max_length=2048)
 
     default_currency: CurrencyEnum
     default_language: LanguageEnum
