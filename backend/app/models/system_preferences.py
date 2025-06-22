@@ -1,18 +1,18 @@
 from typing import Optional
-from uuid import UUID, uuid4
+from uuid import UUID
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Column
-from pydantic import BaseModel, HttpUrl, ConfigDict
+from pydantic import BaseModel, HttpUrl, ConfigDict, model_validator
 from sqlalchemy import DateTime
 from app.models.enums import CurrencyEnum, LanguageEnum, TaxSchemeEnum
 
-
 # ==== ORM model ====
+STATIC_ID = UUID("00000000-0000-0000-0000-000000000001")
 
 class SystemPreferences(SQLModel, table=True):
     __tablename__ = "system_preferences"  # type: ignore[assignment]
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    id: UUID = Field(default=STATIC_ID, primary_key=True, index=True)
 
     company_name: str = Field(max_length=512)
     company_logo_url: Optional[HttpUrl] = Field(default=None, nullable=True)
@@ -56,8 +56,12 @@ class SystemPreferencesBase(BaseModel):
 
 
 class SystemPreferencesCreate(SystemPreferencesBase):
-    pass
 
+    @model_validator(mode="after")
+    def validate_tax_logic(self) -> "SystemPreferencesCreate":
+        if self.tax_scheme == TaxSchemeEnum.kleinunternehmer and self.enable_oss:
+            raise ValueError("OSS cannot be enabled under the Kleinunternehmerregelung.")
+        return self
 
 class SystemPreferencesUpdate(BaseModel):
     company_name: Optional[str] = Field(None, max_length=512)
@@ -72,6 +76,12 @@ class SystemPreferencesUpdate(BaseModel):
     enable_oss: Optional[bool] = Field(default=None)
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="after")
+    def validate_tax_logic(self) -> "SystemPreferencesUpdate":
+        if self.tax_scheme == TaxSchemeEnum.kleinunternehmer and self.enable_oss:
+            raise ValueError("OSS cannot be enabled under the Kleinunternehmerregelung.")
+        return self
 
 
 class SystemPreferencesRead(SystemPreferencesBase):

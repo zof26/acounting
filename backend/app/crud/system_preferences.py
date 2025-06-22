@@ -7,35 +7,35 @@ from app.models.system_preferences import (
     SystemPreferences,
     SystemPreferencesCreate,
     SystemPreferencesUpdate,
+    STATIC_ID
 )
 
-
 async def get_preferences(db: AsyncSession) -> Optional[SystemPreferences]:
-    result = await db.exec(select(SystemPreferences).limit(1))
+    result = await db.exec(select(SystemPreferences))
     return result.one_or_none()
 
-
-async def create_preferences(
-    db: AsyncSession, prefs_in: SystemPreferencesCreate
-) -> SystemPreferences:
+async def create_preferences(db: AsyncSession, prefs_in: SystemPreferencesCreate) -> SystemPreferences:
     existing = await get_preferences(db)
     if existing:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="System preferences already exist.")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="System preferences already exist."
+        )
 
-    prefs = SystemPreferences(**prefs_in.model_dump())
+    prefs = SystemPreferences(id=STATIC_ID, **prefs_in.model_dump())
     db.add(prefs)
     await db.commit()
     await db.refresh(prefs)
     return prefs
 
-
-async def update_preferences(
-    db: AsyncSession, prefs_in: SystemPreferencesUpdate
-) -> Optional[SystemPreferences]:
+async def update_preferences(db: AsyncSession, prefs_in: SystemPreferencesUpdate) -> Optional[SystemPreferences]:
     prefs = await get_preferences(db)
     if not prefs:
-        return None
-
+        # Create from patch if not found
+        return await create_preferences(
+            db,
+            SystemPreferencesCreate(**prefs_in.model_dump(exclude_unset=True))
+        )
     data = prefs_in.model_dump(exclude_unset=True)
     for field, value in data.items():
         setattr(prefs, field, value)
