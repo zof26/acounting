@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from datetime import datetime, timezone
 from pydantic import BaseModel, ConfigDict
 import sqlalchemy as sa
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, String
 from sqlmodel import SQLModel
 from app.models.enums import ClientTypeEnum
 from app.models.contact_person import ContactPersonCreate
@@ -12,24 +12,27 @@ from app.models.document_attachment import DocumentAttachmentCreate
 from app.models.contact_person import ContactPersonRead
 from app.models.document_attachment import DocumentAttachmentRead
 
+
 # ==== ORM model ====
 if TYPE_CHECKING:
     from app.models.contact_person import ContactPerson
     from app.models.document_attachment import DocumentAttachment
+    from app.models.invoice import Invoice
 
 class Client(SQLModel, table=True):
     __tablename__ = "client" # type: ignore[assignment]
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
 
     name: str = Field(nullable=False, max_length=512)
-    type: ClientTypeEnum = Field(default=ClientTypeEnum.client)
-
+    type: ClientTypeEnum = Field(sa_column=Column(String(20)), default=ClientTypeEnum.client)
     ust_id: Optional[str] = Field(default=None, max_length=20)
     ust_id_validated: Optional[bool] = Field(default=False)
     ust_id_checked_at: Optional[datetime] = Field(
         default=None,
         sa_column=Column(sa.TIMESTAMP(timezone=True))
     )
+
+    invoices: List["Invoice"] = Relationship(back_populates="client")
 
     notes: Optional[str] = Field(default=None)
     dunning_level: Optional[int] = Field(default=0, ge=0, le=3)

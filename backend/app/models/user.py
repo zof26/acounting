@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from datetime import datetime, timezone
 from app.models.enums import RoleEnum
 import sqlalchemy as sa
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, String
 from pydantic import BaseModel, EmailStr, ConfigDict
 
 
@@ -18,7 +18,7 @@ class User(SQLModel, table=True):
     first_name: str = Field(default=None, max_length=50)
     last_name: str = Field(default=None, max_length=50)
 
-    role: RoleEnum = Field(default=RoleEnum.Accountant)  
+    role: RoleEnum = Field(sa_column=Column(String(20)), default=RoleEnum.Accountant)  
     is_active: bool = Field(default=True)    
 
     last_login: Optional[datetime] = Field(default=None, sa_column=Column(sa.TIMESTAMP(timezone=True)))

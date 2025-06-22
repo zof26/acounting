@@ -3,7 +3,7 @@ from uuid import UUID
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Column
 from pydantic import BaseModel, HttpUrl, ConfigDict, model_validator
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, String
 from app.models.enums import CurrencyEnum, LanguageEnum, TaxSchemeEnum
 
 # ==== ORM model ====
@@ -17,9 +17,9 @@ class SystemPreferences(SQLModel, table=True):
     company_name: str = Field(max_length=512)
     company_logo_url: Optional[str] = Field(default=None, nullable=True, max_length=2048)
 
-    default_currency: CurrencyEnum
-    default_language: LanguageEnum
-    tax_scheme: TaxSchemeEnum
+    default_currency: CurrencyEnum = Field(sa_column=Column(String(3)))
+    default_language: LanguageEnum = Field(sa_column=Column(String(2)))
+    tax_scheme: TaxSchemeEnum = Field(sa_column=Column(String(50)))
 
     invoice_prefix: Optional[str] = Field(default="INV", max_length=16)
     enable_reverse_charge: bool = False

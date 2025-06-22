@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, String
 
 
 class ItemType(str, Enum):
@@ -22,8 +22,7 @@ class Item(SQLModel, table=True):
 
     name: str = Field(max_length=512)
     description: Optional[str] = Field(default=None)
-    type: ItemType = Field(default=ItemType.service)
-
+    type: ItemType = Field(sa_column=Column(String(20)), default=ItemType.service)
     unit: Optional[str] = Field(default="hour", max_length=50)  # e.g., "hour", "piece", "day"
     unit_price: Decimal = Field(default=Decimal("0.0"), ge=0, decimal_places=2)
     cost_price: Optional[Decimal] = Field(default=Decimal("0.0"), ge=0, decimal_places=2)

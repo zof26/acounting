@@ -1,8 +1,8 @@
 """Initial clean
 
-Revision ID: b2dee4d24d1b
+Revision ID: ae24f43eb81e
 Revises: 
-Create Date: 2025-06-22 19:56:23.585889
+Create Date: 2025-06-22 21:15:41.878342
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 import sqlmodel.sql.sqltypes
 
 # revision identifiers, used by Alembic.
-revision: str = 'b2dee4d24d1b'
+revision: str = 'ae24f43eb81e'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,7 +24,7 @@ def upgrade() -> None:
     op.create_table('client',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(length=512), nullable=False),
-    sa.Column('type', sa.Enum('client', 'prospect', 'lead', name='clienttypeenum'), nullable=False),
+    sa.Column('type', sa.String(length=20), nullable=True),
     sa.Column('ust_id', sqlmodel.sql.sqltypes.AutoString(length=20), nullable=True),
     sa.Column('ust_id_validated', sa.Boolean(), nullable=True),
     sa.Column('ust_id_checked_at', sa.TIMESTAMP(timezone=True), nullable=True),
@@ -40,7 +40,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(length=512), nullable=False),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('type', sa.Enum('service', 'product', 'bundle', name='itemtype'), nullable=False),
+    sa.Column('type', sa.String(length=20), nullable=True),
     sa.Column('unit', sqlmodel.sql.sqltypes.AutoString(length=50), nullable=True),
     sa.Column('unit_price', sa.Numeric(scale=2), nullable=False),
     sa.Column('cost_price', sa.Numeric(scale=2), nullable=True),
@@ -68,9 +68,9 @@ def upgrade() -> None:
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('company_name', sqlmodel.sql.sqltypes.AutoString(length=512), nullable=False),
     sa.Column('company_logo_url', sqlmodel.sql.sqltypes.AutoString(length=2048), nullable=True),
-    sa.Column('default_currency', sa.Enum('EUR', 'USD', 'CHF', name='currencyenum'), nullable=False),
-    sa.Column('default_language', sa.Enum('en', 'de', name='languageenum'), nullable=False),
-    sa.Column('tax_scheme', sa.Enum('kleinunternehmer', 'vat_liable', name='taxschemeenum'), nullable=False),
+    sa.Column('default_currency', sa.String(length=3), nullable=True),
+    sa.Column('default_language', sa.String(length=2), nullable=True),
+    sa.Column('tax_scheme', sa.String(length=50), nullable=True),
     sa.Column('invoice_prefix', sqlmodel.sql.sqltypes.AutoString(length=16), nullable=True),
     sa.Column('enable_reverse_charge', sa.Boolean(), nullable=False),
     sa.Column('enable_oss', sa.Boolean(), nullable=False),
@@ -85,7 +85,7 @@ def upgrade() -> None:
     sa.Column('hashed_password', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('first_name', sqlmodel.sql.sqltypes.AutoString(length=50), nullable=False),
     sa.Column('last_name', sqlmodel.sql.sqltypes.AutoString(length=50), nullable=False),
-    sa.Column('role', sa.Enum('Admin', 'Accountant', name='roleenum'), nullable=False),
+    sa.Column('role', sa.String(length=20), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('last_login', sa.TIMESTAMP(timezone=True), nullable=True),
     sa.Column('preferences', sa.JSON(), nullable=True),
@@ -130,12 +130,78 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_document_attachment_client_id'), 'document_attachment', ['client_id'], unique=False)
     op.create_index(op.f('ix_document_attachment_id'), 'document_attachment', ['id'], unique=False)
+    op.create_table('invoice',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('number', sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False),
+    sa.Column('client_id', sa.Uuid(), nullable=False),
+    sa.Column('issue_date', sa.DateTime(), nullable=False),
+    sa.Column('due_date', sa.DateTime(), nullable=False),
+    sa.Column('paid_at', sa.DateTime(), nullable=True),
+    sa.Column('dunning_level', sa.Integer(), nullable=False),
+    sa.Column('dunning_fee', sa.Float(), nullable=False),
+    sa.Column('reminder_count', sa.Integer(), nullable=False),
+    sa.Column('last_reminder_sent_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('status', sa.Enum('draft', 'sent', 'paid', 'overdue', 'cancelled', name='invoicestatusenum'), nullable=True),
+    sa.Column('currency', sa.String(length=3), nullable=True),
+    sa.Column('language', sa.String(length=2), nullable=True),
+    sa.Column('subtotal', sa.Float(), nullable=False),
+    sa.Column('vat', sa.Float(), nullable=False),
+    sa.Column('total', sa.Float(), nullable=False),
+    sa.Column('reverse_charge', sa.Boolean(), nullable=False),
+    sa.Column('oss', sa.Boolean(), nullable=False),
+    sa.Column('notes', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('terms', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('attachment_url', sqlmodel.sql.sqltypes.AutoString(length=2048), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.ForeignKeyConstraint(['client_id'], ['client.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_invoice_id'), 'invoice', ['id'], unique=False)
+    op.create_index(op.f('ix_invoice_number'), 'invoice', ['number'], unique=True)
+    op.create_table('invoice_item',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('invoice_id', sa.Uuid(), nullable=False),
+    sa.Column('item_id', sa.Uuid(), nullable=True),
+    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(length=1024), nullable=False),
+    sa.Column('quantity', sa.Float(), nullable=False),
+    sa.Column('unit_price', sa.Float(), nullable=False),
+    sa.Column('vat_rate', sa.Float(), nullable=False),
+    sa.Column('position', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.ForeignKeyConstraint(['invoice_id'], ['invoice.id'], ),
+    sa.ForeignKeyConstraint(['item_id'], ['item.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_invoice_item_id'), 'invoice_item', ['id'], unique=False)
+    op.create_table('payment',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('invoice_id', sa.Uuid(), nullable=False),
+    sa.Column('method', sa.Enum('sepa', 'stripe', 'paypal', 'cash', 'bank_transfer', name='paymentmethodenum'), nullable=True),
+    sa.Column('transaction_id', sqlmodel.sql.sqltypes.AutoString(length=128), nullable=True),
+    sa.Column('amount', sa.Numeric(scale=2), nullable=False),
+    sa.Column('received_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('notes', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.ForeignKeyConstraint(['invoice_id'], ['invoice.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_payment_id'), 'payment', ['id'], unique=False)
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_index(op.f('ix_payment_id'), table_name='payment')
+    op.drop_table('payment')
+    op.drop_index(op.f('ix_invoice_item_id'), table_name='invoice_item')
+    op.drop_table('invoice_item')
+    op.drop_index(op.f('ix_invoice_number'), table_name='invoice')
+    op.drop_index(op.f('ix_invoice_id'), table_name='invoice')
+    op.drop_table('invoice')
     op.drop_index(op.f('ix_document_attachment_id'), table_name='document_attachment')
     op.drop_index(op.f('ix_document_attachment_client_id'), table_name='document_attachment')
     op.drop_table('document_attachment')
